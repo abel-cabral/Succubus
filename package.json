@@ -16,6 +16,10 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^8.0.0",
-    "node-telegram-bot-api": "^0.30.0"
+    "node-telegram-bot-api": "^0.30.0",
+    "watson-developer-cloud": "^4.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.1"
   }
 }

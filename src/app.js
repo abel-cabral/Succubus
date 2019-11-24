@@ -1,11 +1,49 @@
 require('dotenv').config();
-const TelegramBot = require('node-telegram-bot-api');
+process.env.NTBA_FIX_319 = 1;
 
+const TelegramBot = require('node-telegram-bot-api');
+const watson = require('./watson/client-watson');
+
+// replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TOKEN;
 
-// Created instance of TelegramBot
-const bot = new TelegramBot(token, {
-    polling: true
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, { polling: true });
+
+// Matches "/echo [whatever]"
+bot.onText(/\/paladino (.+)/, (msg, match) => {
+  // 'msg' is the received Message from Telegram
+  // 'match' is the result of executing the regexp above on the text content
+  // of the message
+
+  const chatId = msg.chat.id;
+  const resp = match[1]; // the captured "whatever"
+
+  // send back the matched "whatever" to the chat
+  bot.sendMessage(chatId, resp);
+});
+
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on('message', msg => {
+  const chatId = msg.chat.id;
+  // send a message to the chat acknowledging receipt of their message
+  //bot.sendLocation(msg.chat.id, 44.97108, -104.27719);
+  //bot.sendMessage(msg.chat.id, 'Here is the point');
+
+  const params = {
+    workspace_id: 'ee818b8b-6f7a-48a6-a35c-833c7e90b7ae',
+    input: { text: msg.chat.text }
+  };
+
+  watson.message(params, (err, response) => {
+    if (err) {
+      console.log(err);
+      bot.sendMessage(chatId, 'Servićo indisponível');
+    } else {
+      bot.sendMessage(chatId, response.output.text[0]);
+    }
+  });
 });
 
 // In-memory storage
@@ -13,8 +51,11 @@ const URLs = [];
 const URLLabels = [];
 let tempSiteURL = '';
 
+/*
 // Listener (handler) for telegram's /bookmark event
-bot.onText(/\/bookmark/, (msg, match) => {
+bot.onText(/\/paladino/, (msg, match) => {    
+    console.log(msg);
+    console.log(match);
     const chatId = msg.chat.id;
     const url = match.input.split(' ')[1];
     // 'msg' is the received Message from Telegram
@@ -35,6 +76,8 @@ bot.onText(/\/bookmark/, (msg, match) => {
         'URL has been successfully saved!',
     );
 });
+
+
 
 // Listener (handler) for telegram's /label event
 bot.onText(/\/label/, (msg, match) => {
@@ -169,3 +212,4 @@ bot.onText(/\/start/, (msg) => {
         }
     );
 });
+*/
