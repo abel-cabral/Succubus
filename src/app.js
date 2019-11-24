@@ -23,59 +23,75 @@ bot.onText(/\/paladino (.+)/, (msg, match) => {
   bot.sendMessage(chatId, resp);
 });
 
-// Listen for any kind of message. There are different kinds of
-// messages.
+// Primeiro contato com o Chat
+bot.onText(/\/start/, (msg, match) => {
+    console.log(msg);
+    console.log(match);
+    const chatId = msg.chat.id;
+  
+    bot.sendMessage(
+      chatId,
+      'Eu sou o Goblison, a tecnologia finalmente me fez vivo. Bem é um pouco menos do que eu esperava. Mas fala aí em que posso ajuda-lo?'
+    );
+    stop();
+  });
+
+// Encaminha para o Watson qualquer Mensagem de tipo conversa
 bot.on('message', msg => {
   const chatId = msg.chat.id;
+  const text = msg.text;
   // send a message to the chat acknowledging receipt of their message
   //bot.sendLocation(msg.chat.id, 44.97108, -104.27719);
   //bot.sendMessage(msg.chat.id, 'Here is the point');
 
   const params = {
     workspace_id: 'ee818b8b-6f7a-48a6-a35c-833c7e90b7ae',
-    input: { text: msg.chat.text }
+    input: { text: text }
   };
 
+  if (msg.entities) return;
+
   watson.message(params, (err, response) => {
+    console.log(response);
     if (err) {
       console.log(err);
-      bot.sendMessage(chatId, 'Servićo indisponível');
+      responseMessage(chatId, 'Servićo indisponível');
     } else {
-      bot.sendMessage(chatId, response.output.text[0]);
+      bot
+        .sendMessage(chatId, response.output.text[0])
+        .then(() =>
+          responseButtons(
+            chatId,
+            'Se quiser ver uma foto clique no botão abaixo.',
+            ['Sample text', 'Que']
+          )
+        );
     }
   });
 });
+
+
+
+// Exibe Botões Clicaveis na tela
+const responseButtons = (chat_id, legenda, vetorString) => {
+  bot.sendMessage(chat_id, legenda, {
+    reply_markup: {
+      keyboard: [vetorString],
+      resize_keyboard: true,
+      one_time_keyboard: true,
+      force_reply: true
+    }
+  });
+};
 
 // In-memory storage
 const URLs = [];
 const URLLabels = [];
 let tempSiteURL = '';
 
+
+
 /*
-// Listener (handler) for telegram's /bookmark event
-bot.onText(/\/paladino/, (msg, match) => {    
-    console.log(msg);
-    console.log(match);
-    const chatId = msg.chat.id;
-    const url = match.input.split(' ')[1];
-    // 'msg' is the received Message from Telegram
-    // 'match' is the result of executing the regexp above on the text content
-    // of the message
-
-    if (url === undefined) {
-        bot.sendMessage(
-            chatId,
-            'Please provide URL of article!',
-        );
-        return;
-    }
-
-    URLs.push(url);
-    bot.sendMessage(
-        chatId,
-        'URL has been successfully saved!',
-    );
-});
 
 
 
