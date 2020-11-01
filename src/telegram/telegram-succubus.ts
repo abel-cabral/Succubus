@@ -1,9 +1,11 @@
 import { Telegraf, Markup, Extra } from 'telegraf';
 import moment from 'moment';
 import { BotKeys } from '../environments';
+import { MyTinder } from '../tinder/tinder';
 
 export class TelegramSuccubus {  
-  bot = new Telegraf(BotKeys.BOT_TOKEN);
+  private bot = new Telegraf(BotKeys.BOT_TOKEN);
+  private tinder = new MyTinder()
   //moment().format('LTS');
 
   constructor() {
@@ -12,6 +14,7 @@ export class TelegramSuccubus {
 
     this.sayHello();
     this.bot.hears('Assalamualaikum', (ctx) => ctx.reply('Waalaikumsalam'));
+    this.myself();
     this.bot.launch();
   }
 
@@ -37,6 +40,12 @@ export class TelegramSuccubus {
           ]),
         ),
       );
+    });
+  }
+
+  private myself() {
+    this.bot.hears('Quem sou eu?', (ctx) => {
+      this.tinder.myProfile().then(res => ctx.reply(`Your name master is ${res.name} or do you prefer to be called ${res.username}?`))
     });
   }
 }
