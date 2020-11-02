@@ -15,6 +15,7 @@ export class TelegramSuccubus {
 
     this.sayHello();
     this.seeApplicant();
+    this.seeApplicants();
     this.bot.hears('Assalamualaikum', (ctx) => ctx.reply('Waalaikumsalam'));
     this.myself();
     this.bot.launch();
@@ -46,6 +47,20 @@ export class TelegramSuccubus {
   }
 
   private seeApplicant(): void {
+    this.bot.hears('Pretendente', (ctx) => {
+      this.tinder.applicant().then((res: Recs) => {
+        ctx.replyWithPhoto(
+          {
+            url: res.results[0].photos[0].url,
+            filename: res.results[0].name,
+          },
+          { caption: res.results[0].name },
+        );
+      });
+    });
+  }
+
+  private seeApplicants(): void {
     this.bot.hears('Pretendente', (ctx) => {
       this.tinder.applicant().then((res: Recs) => {
         for (let i = 0; i < 5; i++) {
