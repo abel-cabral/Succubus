@@ -2,10 +2,11 @@ import { Telegraf, Markup, Extra } from 'telegraf';
 import moment from 'moment';
 import { BotKeys } from '../environments';
 import { MyTinder } from '../tinder/tinder';
+import { Recs } from '../models/tinder.model';
 
-export class TelegramSuccubus {  
+export class TelegramSuccubus {
   private bot = new Telegraf(BotKeys.BOT_TOKEN);
-  private tinder = new MyTinder()
+  private tinder = new MyTinder();
   //moment().format('LTS');
 
   constructor() {
@@ -13,6 +14,7 @@ export class TelegramSuccubus {
     this.serverBack();
 
     this.sayHello();
+    this.seeApplicant();
     this.bot.hears('Assalamualaikum', (ctx) => ctx.reply('Waalaikumsalam'));
     this.myself();
     this.bot.launch();
@@ -43,9 +45,31 @@ export class TelegramSuccubus {
     });
   }
 
+  private seeApplicant(): void {
+    this.bot.hears('Pretendente', (ctx) => {
+      this.tinder.applicant().then((res: Recs) => {
+        for (let i = 0; i < 5; i++) {
+          ctx.replyWithPhoto(
+            {
+              url: res.results[i].photos[0].url,
+              filename: res.results[i].name,
+            },
+            { caption: res.results[i].name },
+          );
+        }
+      });
+    });
+  }
+
   private myself() {
     this.bot.hears('Quem sou eu?', (ctx) => {
-      this.tinder.myProfile().then(res => ctx.reply(`Your name master is ${res.name} or do you prefer to be called ${res.username}?`))
+      this.tinder
+        .myProfile()
+        .then((res) =>
+          ctx.reply(
+            `Your name master is ${res.name} or do you prefer to be called ${res.username}?`,
+          ),
+        );
     });
   }
 }
