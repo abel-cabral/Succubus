@@ -9,12 +9,15 @@ import { IdentifyChatModel } from '../models/telegram.model';
 export class TelegramSuccubus {
   private bot = new Telegraf(BotKeys.BOT_TOKEN);
   private tinder = new MyTinder();  
-  private identifyChat: IdentifyChatModel[] = [];  
+  private identifyChat: IdentifyChatModel[] = [];
+  private tinderMessages: any[] = [];
   //moment().format('LTS');
 
   constructor() {
     moment.locale('pt-br');
     this.serverBack();
+
+    this.updateTinderMessages();
 
     this.sayHello();
     this.seeApplicant();
@@ -103,4 +106,15 @@ export class TelegramSuccubus {
       })
     });
   }
+
+  private updateTinderMessages(): void {
+    this.tinder.allConversations().then(res => {
+      this.tinderMessages = res.matches;
+      setTimeout(() => {
+        console.log('Getting messages');
+        this.updateTinderMessages();
+      }, 10000);
+    })
+  }
+
 }
