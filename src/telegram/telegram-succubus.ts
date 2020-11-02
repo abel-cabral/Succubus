@@ -5,43 +5,65 @@ import { MyTinder } from '../tinder/tinder';
 import { Recs } from '../models/tinder.model';
 import { MyWatson } from '../watson/watson';
 import { IdentifyChatModel } from '../models/telegram.model';
+import { WatsonResponseModel } from '../models/watson.model';
+import { TelegrafContext } from 'telegraf/typings/context';
+moment.locale('pt-br');
 
 export class TelegramSuccubus {
-  private bot = new Telegraf(BotKeys.BOT_TOKEN);
-  private tinder = new MyTinder();  
+  private bot: Telegraf<TelegrafContext> = new Telegraf(BotKeys.BOT_TOKEN);
+  private tinder = new MyTinder();
   private identifyChat: IdentifyChatModel[] = [];
   private tinderMessages: any[] = [];
-  //moment().format('LTS');
+  // private myTelegram;
+  // moment().format('LTS');
 
   constructor() {
-    moment.locale('pt-br');
-    this.serverBack();
+    this.bot.start((ctx) => ctx.reply('Welcome, do you need do login'));
+    this.bot.hears(BotKeys.MY_KEY, (ctx: any) => {      
+      ctx.reply("Login has been success") 
+      this.bot.stop();
+      this.initServices();      
+    });
+    this.bot.launch();
+  }
+
+  private initServices(): void {
+    // this.middleware();
+    const watson = new MyWatson();
+    watson.createWatsonSession().then((res) => {
+      watson
+        .sendMessage('000A', res.result.session_id)
+        .then((res: WatsonResponseModel | any) =>
+          res.output.generic.map((r: any) => console.log(r.text)),
+        );
+    });
 
     this.updateTinderMessages();
 
     this.sayHello();
     this.seeApplicant();
     this.seeApplicants();
-   
+
     this.myself();
-    this.bot.launch();
+    this.bot.launch();    
   }
 
-  private serverBack(): void {
-    // each time that hear something, will execute it
-    this.bot.use(async (ctx: any, next: any) => {
-      const start = new Date();
-      await next();
-      // const response_time = new Date() - start;
-      // const chat_from = `${ctx.message.chat.first_name} (id: ${ctx.message.chat.id})`
-      // console.log(`Chat from ${chat_from} (Response Time: ${response_time})`)969369
+  private middleware(): void {
+    // Middleware is an essential part of any modern framework.
+    this.bot.use(async (ctx: any, next) => {
+      /*
+      if(ctx.update.message.text === '0001') {
+        await ctx.reply('You don\'t have access. Go away.');
+        next();
+      } else {
+        await next();
+      }*/
     });
   }
 
   private sayHello(): void {
     this.bot.hears('hello', (ctx: any) => {
       const initWatson = new MyWatson();
-      initWatson.sendMessage('hello');
       ctx.reply(
         '<b>Hello</b>. <i>How are you today?</i>',
         Extra.HTML().markup(
@@ -62,7 +84,7 @@ export class TelegramSuccubus {
             url: res.results[0].photos[0].url,
             filename: res.results[0].name,
           },
-          { caption: res.results[0].name }
+          { caption: res.results[0].name },
         );
       });
     });
@@ -99,22 +121,23 @@ export class TelegramSuccubus {
   private startConversation(): void {
     this.tinder.applicant().then((res: Recs) => {
       res.results.map((data, index) => {
-        if(index < 5) {
-          this.identifyChat[index].tinder = data
+        if (index < 5) {
+          this.identifyChat[index].tinder = data;
           //this.
         }
-      })
+      });
     });
   }
 
   private updateTinderMessages(): void {
-    this.tinder.allConversations().then(res => {
+    this.tinder.allConversations().then((res) => {
       this.tinderMessages = res.matches;
       setTimeout(() => {
         console.log('Getting messages');
         this.updateTinderMessages();
-      }, 10000);
-    })
+      }, 60000);
+    });
   }
 
+  private askHim(msg: string) {}
 }

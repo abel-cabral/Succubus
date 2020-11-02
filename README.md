@@ -10,3 +10,7 @@ Configuração
 Inicializando
   - npm install
   - npm start
+
+Codigos do Watson para o Backend
+  - 000A - Succubus para Watson, o faz cumprimentar.
+  - 0001 - Watson informa a Succubus que ela deve solicitar resposta ao usuário.

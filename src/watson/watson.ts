@@ -27,29 +27,23 @@ export class MyWatson {
         assistantId: assistant_id,
         sessionId: session_id,
       })
-      .then((res) =>  console.log(JSON.stringify(res, null, 2)))
+      .then((res) => res)
       .catch((err) => console.log(err));
   }
 
-  public sendMessage(msg: string): any {
-    this.createWatsonSession().then(res => this.closeWatsonSession(this.assistant_id, res.result.session_id))
-    /*
-    console.log(this.session_id);
+  public sendMessage(msg: string, sessionId: string): Promise<any> {
     return this.assistant
       .message({
         assistantId: this.assistant_id,
-        sessionId: '6b7b0658-c4b0-40de-9d3e-cd088e517182',
+        sessionId: sessionId,
         input: {
           message_type: 'text',
           text: msg,
         },
       })
-      .then((res) => {
-        console.log(JSON.stringify(res.result, null, 2));
-      })
+      .then((res) => res.result)
       .catch((err) => {
         console.log(err);
       });
-      */
   }
 }
