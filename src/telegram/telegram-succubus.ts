@@ -54,14 +54,14 @@ export class TelegramSuccubus {
             url: res.results[0].photos[0].url,
             filename: res.results[0].name,
           },
-          { caption: res.results[0].name },
+          { caption: res.results[0].name }
         );
       });
     });
   }
 
   private seeApplicants(): void {
-    this.bot.hears('Pretendente', (ctx) => {
+    this.bot.hears('Pretendentes', (ctx) => {
       this.tinder.applicant().then((res: Recs) => {
         for (let i = 0; i < 5; i++) {
           ctx.replyWithPhoto(
