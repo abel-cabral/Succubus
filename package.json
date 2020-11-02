@@ -17,10 +17,10 @@
   "license": "ISC",
   "dependencies": {
     "axios": "~0.21.0",
+    "ibm-watson": "^5.7.1",
     "moment": "~2.29.1",
     "telegraf": "~3.38.0",
-    "typescript": "~4.0.5",
-    "watson-developer-cloud": "~4.0.1"
+    "typescript": "~4.0.5"
   },
   "devDependencies": {
     "nodemon": "~2.0.1"
