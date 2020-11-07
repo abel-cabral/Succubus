@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { BotKeys } from '../environments';
+import { OnLikeModel, OnPassModel } from '../models/tinder.model';
 
 export class MyTinder {
   private config: AxiosRequestConfig = {
@@ -19,11 +20,11 @@ export class MyTinder {
     return this.genericGET('/user/recs');
   }
 
-  public like(applicantId: string): Promise<any> {
+  public like(applicantId: string): Promise<OnLikeModel> {
     return this.genericGET('/like/' + applicantId);
   }
 
-  public dislike(applicantId: string): Promise<any> {
+  public dislike(applicantId: string): Promise<OnPassModel> {
     return this.genericGET('/pass/' + applicantId);
   }
 
