@@ -2,33 +2,40 @@ import { Telegraf, Markup, Extra } from 'telegraf';
 import moment from 'moment';
 import { BotKeys } from '../environments';
 import { MyTinder } from '../tinder/tinder';
-import { Recs } from '../models/tinder.model';
+import { Recs, MessageModel } from '../models/tinder.model';
 import { MyWatson } from '../watson/watson';
 import { IdentifyChatModel } from '../models/telegram.model';
 import { WatsonResponseModel } from '../models/watson.model';
 import { TelegrafContext } from 'telegraf/typings/context';
+
+const _ = require('lodash');
+const hash = require('js-hash-code');
 moment.locale('pt-br');
 
 export class TelegramSuccubus {
   private bot: Telegraf<TelegrafContext> = new Telegraf(BotKeys.BOT_TOKEN);
   private tinder = new MyTinder();
   private identifyChat: IdentifyChatModel[] = [];
-  private tinderMessages: any[] = [];
+  private tinderAllData: any[] = [];
+  // private tinderAllDataObserver: any = this.dataObservable(this.tinderAllData);
+  private tinderAllMessage: MessageModel[] = [];
+
   // private myTelegram;
   // moment().format('LTS');
 
   constructor() {
     this.bot.start((ctx) => ctx.reply('Welcome, do you need do login'));
-    this.bot.hears(BotKeys.MY_KEY, (ctx: any) => {      
-      ctx.reply("Login has been success") 
+    this.bot.hears(BotKeys.MY_KEY, (ctx: any) => {
+      ctx.reply('Login has been success');
       this.bot.stop();
-      this.initServices();      
+      this.initServices();
     });
     this.bot.launch();
   }
 
   private initServices(): void {
     // this.middleware();
+    /*
     const watson = new MyWatson();
     watson.createWatsonSession().then((res) => {
       watson
@@ -37,15 +44,14 @@ export class TelegramSuccubus {
           res.output.generic.map((r: any) => console.log(r.text)),
         );
     });
-
-    this.updateTinderMessages();
-
+*/
     this.sayHello();
     this.seeApplicant();
     this.seeApplicants();
 
     this.myself();
-    this.bot.launch();    
+    this.tinderMaganer();
+    this.bot.launch();
   }
 
   private middleware(): void {
@@ -59,6 +65,79 @@ export class TelegramSuccubus {
         await next();
       }*/
     });
+  }
+
+  private tinderMaganer(): void {
+    this.checkingNewMessage(true);
+  }
+
+  private checkingNewMessage(firstTime = false) {
+    this.tinder.receiveMessage(20, 20).then((res) => {
+      const aux: MessageModel[] = [];
+      console.log('Finding new messages');
+
+      // Na primeira execução uma lista será salva com todos as conversas atuais.
+      if (firstTime) {
+        res.data.matches.map((r: any) => {
+          r.messages.map((m: any) =>
+            this.tinderAllMessage.push({
+              from: m.from,
+              message: m.message,
+              sent_date: m.sent_date,
+            }),
+          );
+        });
+        this.checkingNewMessage();
+      }
+
+      // Uma lista interna e temporaria recebe os dados a cada nova requisição.
+      res.data.matches.map((r: any) => {
+        r.messages.map((m: any) =>
+          aux.push({
+            from: m.from,
+            message: m.message,
+            sent_date: m.sent_date,
+          }),
+        );
+      });
+
+      // Primeiro comparamos o hashcode das duas listas para saber se houveram atualizações.
+      if (hash(this.tinderAllMessage) == hash(aux)) {
+        console.log("There isn't new messages");
+      } else {       
+        console.log(this.compareArrays(this.tinderAllMessage, aux));
+        this.tinderAllMessage = aux;
+      }
+      /*
+      if (!_.isEqual(this.tinderAllMessage, aux)) {
+        console.log('Nao é igual');
+        // Find all properties that has been changed
+        const changed: any[] = _.difference(aux, this.tinderAllMessage);
+        console.log(changed[0]);
+
+        changed.map((c) => {
+          // Check if message not is mine
+          if (c.from === BotKeys.TINDER_KEY) {
+            console.log('Mensagem Minha');
+          } else {
+            console.log('Mensagem de terceiros');
+          }
+        });
+        */
+
+      // After some seconds we called the function again.
+      setTimeout(() => this.checkingNewMessage(), 10000);
+    });
+  }
+
+  // Compare two obj arrays and return the object that has been changed
+  private compareArrays(a: any[], b: any[]): any[] {
+    const comp = (otherArray: any[]) => (current: any) =>
+      otherArray.filter((other: any) => hash(other) == hash(current)).length == 0;
+    const onlyInA: any[] = a.filter(comp(b));
+    const onlyInB: any[] = b.filter(comp(a));
+    const result: any[] = onlyInA.concat(onlyInB);
+    return onlyInB;
   }
 
   private sayHello(): void {
@@ -129,15 +208,19 @@ export class TelegramSuccubus {
     });
   }
 
-  private updateTinderMessages(): void {
-    this.tinder.allConversations().then((res) => {
-      this.tinderMessages = res.matches;
-      setTimeout(() => {
-        console.log('Getting messages');
-        this.updateTinderMessages();
-      }, 60000);
-    });
-  }
-
   private askHim(msg: string) {}
+
+  private dataObservable(data: any): ProxyHandler<any> {
+    console.log('Acessando');
+    const handler: any = {
+      set(target: any, key: any, value: any) {
+        if (_.isEqual(data, target)) {
+          console.log('Houve Atualização');
+          target[key] = value;
+        }
+        return true;
+      },
+    };
+    return new Proxy(data, handler);
+  }
 }

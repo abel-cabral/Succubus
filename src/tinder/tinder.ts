@@ -13,30 +13,39 @@ export class MyTinder {
   constructor() {}
 
   public myProfile(): Promise<any> {
-    return this.genericGET('/profile');
+    return this.genericRequest('/profile');
   }
 
   public applicant(): Promise<any> {
-    return this.genericGET('/user/recs');
+    return this.genericRequest('/user/recs');
   }
 
   public like(applicantId: string): Promise<OnLikeModel> {
-    return this.genericGET('/like/' + applicantId);
+    return this.genericRequest('/like/' + applicantId);
   }
 
   public dislike(applicantId: string): Promise<OnPassModel> {
-    return this.genericGET('/pass/' + applicantId);
+    return this.genericRequest('/pass/' + applicantId);
   }
 
   public sendMessage(msg: string, applicantId: string): Promise<any> {
-    return this.genericGET('/user/matches/' + applicantId, { message: msg });
+    return this.genericRequest('/user/matches/' + applicantId, { message: msg });
+  }
+  
+  public receiveMessage(count = 10, message = 2): Promise<any> {
+    return this.genericRequest(`/v2/matches/?locale=pt&count=${count}&message=${message}`);
   }
 
-  public allConversations(): Promise<any> {
-    return this.genericGET('/updates', {});
+  public allData(): Promise<any> {
+    return this.genericRequest('/updates', {});
   }
 
-  private genericGET(complementsURL: string, data: any = ''): Promise<any> {
+  /*
+  public allMatches(): {
+
+  }*/
+
+  private genericRequest(complementsURL: string, data: any = ''): Promise<any> {
     const body: AxiosRequestConfig = this.config;    
     body.url = complementsURL;
     body.method = data ? 'post' : 'get';

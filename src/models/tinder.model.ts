@@ -38,6 +38,12 @@ export interface OnPassModel {
   'X-Padding': any;
 }
 
+export interface MessageModel {
+  from: string;
+  message: string;
+  sent_date: string;
+}
+
 interface photos {
   id: string;
   type: string;
