@@ -14,20 +14,25 @@ moment.locale('pt-br');
 
 export class TelegramSuccubus {
   private bot: Telegraf<TelegrafContext> = new Telegraf(BotKeys.BOT_TOKEN);
+  private myTelegramChatId: number | any = 0;
   private tinder = new MyTinder();
   private identifyChat: IdentifyChatModel[] = [];
   private tinderAllData: any[] = [];
   // private tinderAllDataObserver: any = this.dataObservable(this.tinderAllData);
   private tinderAllMessage: MessageModel[] = [];
-  private TinderAllMatchIds: string[] = []
+  private tinderMatchesIds: string[] = [];
+
+  // All Matches
+  private tinderMatches: any = {};
 
   // private myTelegram;
   // moment().format('LTS');
 
   constructor() {
     this.bot.start((ctx) => ctx.reply('Welcome, do you need do login'));
-    this.bot.hears(BotKeys.MY_KEY, (ctx: any) => {
+    this.bot.hears(BotKeys.MY_KEY, (ctx) => {
       ctx.reply('Login has been success');
+      this.myTelegramChatId = ctx.from?.id;
       this.bot.stop();
       this.initServices();
     });
@@ -36,25 +41,12 @@ export class TelegramSuccubus {
 
   private initServices(): void {
     // this.middleware();
-    /*
     const watson = new MyWatson();
-    watson.createWatsonSession().then((res) => {
-      watson
-        .sendMessage('000A', res.result.session_id)
-        .then((res: WatsonResponseModel | any) =>
-          res.output.generic.map((r: any) => console.log(r.text)),
-        );
-    });
-*/
-    
-    /*
-    this.sayHello();
-    this.seeApplicant();
-    this.seeApplicants();
 
     this.myself();
-    this.tinderMaganer();
-    */
+    this.seeApplicant();
+    this.seeApplicants();
+    this.tinderMaganer(true);
     this.bot.launch();
   }
 
@@ -71,8 +63,18 @@ export class TelegramSuccubus {
     });
   }
 
-  private tinderMaganer(): void {
-    this.checkingNewMessage(true);
+  private tinderMaganer(firstTime = false): void {
+    if (firstTime) {
+      this.tinder.allData().then((res: any) => {
+        this.tinderMatches = res.matches;
+        setTimeout(() => this.tinderMaganer(), 10000);
+      });
+    } else {
+      this.tinder.allData().then((res: any) => {
+        this.checkNewMatches(res.matches, this.tinderMatches);
+        setTimeout(() => this.tinderMaganer(), 10000);
+      });
+    }
   }
 
   private checkingNewMessage(firstTime = false) {
@@ -107,8 +109,8 @@ export class TelegramSuccubus {
 
       // Primeiro comparamos o hashcode das duas listas para saber se houveram atualizações.
       if (hash(this.tinderAllMessage) == hash(aux)) {
-        console.log("There isn't new messages");
-      } else {       
+        console.log(`There isn't new messages`);
+      } else {
         console.log(this.compareArrays(this.tinderAllMessage, aux));
         this.tinderAllMessage = aux;
       }
@@ -137,14 +139,15 @@ export class TelegramSuccubus {
   // Compare two obj arrays and return the object that has been changed
   private compareArrays(a: any[], b: any[]): any[] {
     const comp = (otherArray: any[]) => (current: any) =>
-      otherArray.filter((other: any) => hash(other) == hash(current)).length == 0;
+      otherArray.filter((other: any) => hash(other) == hash(current)).length ==
+      0;
     const onlyInA: any[] = a.filter(comp(b));
     const onlyInB: any[] = b.filter(comp(a));
     const result: any[] = onlyInA.concat(onlyInB);
     return onlyInB;
   }
 
-  private sayHello(): void {
+  private demo(): void {
     this.bot.hears('hello', (ctx: any) => {
       const initWatson = new MyWatson();
       ctx.reply(
@@ -214,16 +217,55 @@ export class TelegramSuccubus {
 
   private askHim(msg: string) {}
 
+  // Create a session and send a message to Tinder match
+  private callWatson(index: any, msg: string) { 
+    const match = this.tinderMatches[index];   
+    let watson = match.watson;
+    
+    if (!watson) {
+      watson = new MyWatson();
+    }    
+        
+    watson.createWatsonSession().then((res: any) => {
+      watson
+        .sendMessage(msg, res.result.session_id)
+        .then((res: WatsonResponseModel | any) =>
+          res.output.generic.map((r: any) => this.tinder.sendMessage(r.text, match.id)),
+        );
+    });
+    // Save current session
+    this.tinderMatches[index].watson = watson;
+  }
+
+  // Check if a new user was added to list
+  private checkNewMatches(current: any, old: any): void {
+    const comp = (otherArray: any[]) => (cent: any) =>
+      otherArray.filter((other: any) => hash(other.id) == hash(cent.id)).length == 0;
+    const tempArr: any[] = current.filter(comp(old));
+
+    if (tempArr.length !== 0) {
+      console.log(`There's a news match`);
+      tempArr.map((res) => {
+        this.bot.telegram.sendMessage(this.myTelegramChatId, `There's a new match with ${res.person.name}`);      
+        this.tinderMatches = current;
+        const index = current.findIndex((element: any) => element._id == res._id);       
+        this.callWatson(index, '000A');
+      });
+    } else {
+      console.log(`There isn't a new match`);
+    }
+  }
+
   // Recursive function to delete all matches
   private deleteAll(array: any[]): void {
     if (array.length === 0) {
-      console.log('All Matches has been undone')        
+      console.log('All Matches has been undone');
       return;
     }
     const unmatch = array.shift();
     this.tinder.unmatchPerson(unmatch.id).then(() => {
       console.log(unmatch.id + ' deleted');
       this.deleteAll(array);
-    })    
+    });
   }
 }
