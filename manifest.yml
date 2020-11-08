@@ -4,7 +4,7 @@ applications:
   timeout: 180
   name: succubus
   buildpack: sdk-for-nodejs
-  command: npm start
+  command: npm run start
   disk_quota: 1G
   memory: 128MB
   domain: mybluemix.net
