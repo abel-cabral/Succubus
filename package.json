@@ -1,20 +1,25 @@
 {
-  "name": "telegram-bot-sitepoint",
+  "name": "Succubus",
+  "main": "./dist/app.js",
+  "description": "Telegram + Tinder API + Watson ChatBot",
   "version": "1.0.0",
-  "description": "Telegram bot for labelling articles",
-  "main": "src/app.js",
+  "private": false,
+  "engines": {
+    "node": "10.*"
+  },
   "scripts": {
     "prestart": "npx tsc",
-    "start": "node ./dist/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./dist/app.js"
   },
   "keywords": [
     "Telegram",
     "Node.js",
     "Javascript"
   ],
-  "author": "Michiel Mulders",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abel-cabral/chatbot-telegram-watson.git"
+  },
   "dependencies": {
     "axios": "~0.21.0",
     "ibm-watson": "^5.7.1",
@@ -26,5 +31,8 @@
   },
   "devDependencies": {
     "nodemon": "~2.0.1"
-  }
+  },
+  "author": "Abel Cabral Arruda",
+  "license": "ISC"
 }
+
