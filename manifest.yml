@@ -1,7 +1,7 @@
 applications:
 - name: Succubus
   buildpacks:
-  - sdk-for-nodejs
+  - nodejs
   command: npm start
   disk_quota: 1G
   env:
