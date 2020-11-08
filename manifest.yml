@@ -1,13 +1,6 @@
 ---
 applications:
-- instances: 1
-  timeout: 180
-  name: succubus
-  buildpack: sdk-for-nodejs
-  command: npm run start
-  disk_quota: 1G
-  memory: 128MB
-  domain: mybluemix.net
-  host: succubus
-  env:
-    OPTIMIZE_MEMORY: true
+ - name: Succubus
+   command: npm run start
+   random-route: true
+   memory: 256M
