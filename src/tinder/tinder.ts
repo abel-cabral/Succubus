@@ -29,15 +29,19 @@ export class MyTinder {
   }
 
   public sendMessage(msg: string, applicantId: string): Promise<any> {
-    return this.genericRequest('/user/matches/' + applicantId, { message: msg });
+    return this.genericRequest('/user/matches/' + applicantId, { message: msg }, 'POST');
   }
   
   public receiveMessage(count = 10, message = 2): Promise<any> {
     return this.genericRequest(`/v2/matches/?locale=pt&count=${count}&message=${message}`);
   }
 
-  public allData(): Promise<any> {
-    return this.genericRequest('/updates', {});
+  public allData(): Promise<any[]> {
+    return this.genericRequest('/updates', {}, 'POST');
+  }
+
+  public unmatchPerson(id: string): Promise<any> {
+    return this.genericRequest('/user/matches/' + id, {}, 'DELETE');
   }
 
   /*
@@ -45,10 +49,10 @@ export class MyTinder {
 
   }*/
 
-  private genericRequest(complementsURL: string, data: any = ''): Promise<any> {
+  private genericRequest(complementsURL: string, data: any = '', method: any = 'GET'): Promise<any> {
     const body: AxiosRequestConfig = this.config;    
     body.url = complementsURL;
-    body.method = data ? 'post' : 'get';
+    body.method = method;
     body.data = data;
     return axios(body)
       .then((response) => response.data)

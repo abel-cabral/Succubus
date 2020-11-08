@@ -19,6 +19,7 @@ export class TelegramSuccubus {
   private tinderAllData: any[] = [];
   // private tinderAllDataObserver: any = this.dataObservable(this.tinderAllData);
   private tinderAllMessage: MessageModel[] = [];
+  private TinderAllMatchIds: string[] = []
 
   // private myTelegram;
   // moment().format('LTS');
@@ -45,12 +46,15 @@ export class TelegramSuccubus {
         );
     });
 */
+    
+    /*
     this.sayHello();
     this.seeApplicant();
     this.seeApplicants();
 
     this.myself();
     this.tinderMaganer();
+    */
     this.bot.launch();
   }
 
@@ -72,7 +76,7 @@ export class TelegramSuccubus {
   }
 
   private checkingNewMessage(firstTime = false) {
-    this.tinder.receiveMessage(20, 20).then((res) => {
+    this.tinder.receiveMessage().then((res) => {
       const aux: MessageModel[] = [];
       console.log('Finding new messages');
 
@@ -210,17 +214,16 @@ export class TelegramSuccubus {
 
   private askHim(msg: string) {}
 
-  private dataObservable(data: any): ProxyHandler<any> {
-    console.log('Acessando');
-    const handler: any = {
-      set(target: any, key: any, value: any) {
-        if (_.isEqual(data, target)) {
-          console.log('Houve Atualização');
-          target[key] = value;
-        }
-        return true;
-      },
-    };
-    return new Proxy(data, handler);
+  // Recursive function to delete all matches
+  private deleteAll(array: any[]): void {
+    if (array.length === 0) {
+      console.log('All Matches has been undone')        
+      return;
+    }
+    const unmatch = array.shift();
+    this.tinder.unmatchPerson(unmatch.id).then(() => {
+      console.log(unmatch.id + ' deleted');
+      this.deleteAll(array);
+    })    
   }
 }
