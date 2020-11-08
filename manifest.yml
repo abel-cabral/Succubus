@@ -1,5 +1,14 @@
----
 applications:
- - name: Succubus
-   random-route: true
-   memory: 256M
+- name: Succubus
+  buildpacks:
+  - sdk-for-nodejs
+  command: npm start
+  disk_quota: 1G
+  env:
+    OPTIMIZE_MEMORY: "true"
+  instances: 1
+  memory: 128M
+  routes:
+  - route: succubus.mybluemix.net
+  stack: cflinuxfs3
+  timeout: 180
