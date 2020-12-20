@@ -1,0 +1,25 @@
+dist: bionic
+
+language: node_js
+
+node_js: 12
+
+git:
+  depth: 5
+
+branches:
+  except:
+    - /^v(\d+\.?)+/
+
+before_install:
+  # Increment package version and prepare for release
+  - if [ "$UPDATE" != "none" ]; then
+      npm version "$UPDATE" --message $'[%s] Release\n\n[skip ci]';
+    fi;
+
+install:
+  # Install NodeJS modules (excluding optional modules)
+  - npm install --no-optional --no-shrinkwrap --no-package-lock
+
+script: 
+  - npm run prestart
