@@ -3,10 +3,10 @@ import AssistantV2 from 'ibm-watson/assistant/v2';
 import { IamAuthenticator } from 'ibm-watson/auth';
 
 export class MyWatson {
-  private assistant_id = BotKeys.WATSON_ASSISTANT;
+  private assistant_id = BotKeys.WATSON_ASSISTANT_ID;
   private assistant = new AssistantV2({
     version: '2020-04-01',
-    authenticator: new IamAuthenticator({ apikey: BotKeys.WATSON_KEY }),
+    authenticator: new IamAuthenticator({ apikey: BotKeys.WATSON_API_KEY }),
     serviceUrl: BotKeys.WATSON_URL,
   });
 

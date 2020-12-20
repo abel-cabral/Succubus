@@ -14,7 +14,7 @@ const hash = require('js-hash-code');
 moment.locale('pt-br');
 
 export class TelegramSuccubus {
-  private bot: Telegraf<TelegrafContext> = new Telegraf(BotKeys.BOT_TOKEN);
+  private bot: Telegraf<TelegrafContext> = new Telegraf(BotKeys.TELEGRAM_BOT_TOKEN);
   private myTelegramChatId: number | any = 0;
   private tinder = new MyTinder();
   private identifyChat: IdentifyChatModel[] = [];
@@ -32,7 +32,7 @@ export class TelegramSuccubus {
 
   constructor() {
     this.bot.start((ctx) => ctx.reply('Welcome, do you need do login'));
-    this.bot.hears(BotKeys.MY_KEY, (ctx) => {
+    this.bot.hears(BotKeys.MY_TELEGRAM_KEY, (ctx) => {
       ctx.reply('Login has been success');
       this.myTelegramChatId = ctx.from?.id;
       this.bot.stop();
