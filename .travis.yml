@@ -3,27 +3,46 @@ dist: bionic
 language: node_js
 
 node_js: 14
+
+git:
+  depth: 5
+
+branches:
+  except:
+    - /^v(\d+\.?)+/
+
+before_install:
   # Connect to the appropriate IBM Cloud org/space and replace branch-dependent URLs and IPs  
-  - echo "Installing IBM Cloud command-line tool and plugin...";
-  - curl -fsSL https://clis.cloud.ibm.com/install/linux | sh;
-  - ibmcloud plugin install container-service -f;
-  - ibmcloud cf install -f 
-  
-  - echo "Connect to the appropriate IBM Cloud instance...";
-  - ibmcloud login -a cloud.ibm.com -o "$ORG" -s "$SPACE" -r "$REGION";
-  
-  - ROUTE=$(ibmcloud cf routes | grep "$APP_NAME" | awk '{print $2}');
-  
-  - echo -e "export const BotKeys = {\n
-    TELEGRAM_CHAT_PASSWORD:'$TELEGRAM_CHAT_PASSWORD',\n
-    TELEGRAM_BOT_TOKEN:'$TELEGRAM_BOT_TOKEN',\n
-    TINDER_TOKEN:'$TINDER_TOKEN',\n
-    WATSON_ASSISTANT_ID:'$WATSON_ASSISTANT_ID',\n
-    WATSON_API_KEY:'$WATSON_API_KEY',\n
-    WATSON_URL:'$WATSON_URL'\n
-  };\n" | tee src/environments.ts;
-  - sed -i -e "s/ROUTE/$ROUTE/g" manifest.yml;
-    
+  - if [ "$SPACE" == "dev" ]; then
+        echo "Installing IBM Cloud command-line tool and plugin...";
+        curl -fsSL https://clis.cloud.ibm.com/install/linux | sh;
+        ibmcloud plugin install container-service -f;
+        ibmcloud cf install -f;
+
+        echo "Installing Kubernetes command-line tool...";
+        curl -LO https://storage.googleapis.com/kubernetes-release/release/"$KUBE_VERSION"/bin/linux/amd64/kubectl;
+        chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl;
+
+        echo "Connect to the appropriate IBM Cloud instance...";
+        ibmcloud login -a cloud.ibm.com -o "$ORG" -s "$SPACE" -r "$REGION";
+        ibmcloud ks init;
+        ibmcloud ks cluster config --cluster "$K8S_CLUSTER";
+
+        ROUTE=$(ibmcloud cf routes | grep "$APP_NAME" | awk '{print $2}');
+        DB_API_ADDRESS=$(ibmcloud cf routes | grep "nanoeor-db-api" | awk '{print $2}');
+        MATERIAL_API_ADDRESS=$(ibmcloud cf routes | grep "nanoeor-material-api" | awk '{print $2}');
+        SIMULATOR_API_ADDRESS=$(kubectl get svc --namespace="$NAMESPACE" nanoeor-simulator-api-lb-"$SPACE" -o jsonpath={..ip});
+
+        echo -e "export const BotKeys = {\n
+          TELEGRAM_CHAT_PASSWORD:'$TELEGRAM_CHAT_PASSWORD',\n
+          TELEGRAM_BOT_TOKEN:'$TELEGRAM_BOT_TOKEN',\n
+          TINDER_TOKEN:'$TINDER_TOKEN',\n
+          WATSON_ASSISTANT_ID:'$WATSON_ASSISTANT_ID',\n
+          WATSON_API_KEY:'$WATSON_API_KEY',\n
+          WATSON_URL:'$WATSON_URL'\n
+        };\n" | tee src/environments.ts;
+        sed -i -e "s/ROUTE/$ROUTE/g" manifest.yml;
+      fi;
 
 install:
   # Install NodeJS modules (excluding optional modules)
