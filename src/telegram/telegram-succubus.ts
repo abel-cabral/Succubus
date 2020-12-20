@@ -1,12 +1,13 @@
 import { Telegraf, Markup, Extra } from 'telegraf';
 import moment from 'moment';
-import { BotKeys } from '../environments';
 import { MyTinder } from '../tinder/tinder';
 import { Recs, MessageModel } from '../models/tinder.model';
 import { MyWatson } from '../watson/watson';
 import { IdentifyChatModel } from '../models/telegram.model';
 import { WatsonResponseModel } from '../models/watson.model';
 import { TelegrafContext } from 'telegraf/typings/context';
+import { BotKeys } from '../environments';
+
 
 const _ = require('lodash');
 const hash = require('js-hash-code');
