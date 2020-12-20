@@ -9,10 +9,9 @@ node_js: 12
   curl -fsSL https://clis.cloud.ibm.com/install/linux | sh;
   ibmcloud plugin install container-service -f;
   ibmcloud cf install -f 
+  
   echo "Connect to the appropriate IBM Cloud instance...";
   ibmcloud login -a cloud.ibm.com -o "$ORG" -s "$SPACE" -r "$REGION";
-  ibmcloud ks init;
-  ibmcloud ks cluster config --cluster "$K8S_CLUSTER"
   
   ROUTE=$(ibmcloud cf routes | grep "$APP_NAME" | awk '{print $2}');
   
@@ -53,7 +52,6 @@ env:
     - ORG=abel@ibm.com
     - REGION=us-south
     - NAMESPACE=dev
-    - K8S_CLUSTER=nanoeor
     - APP_NAME=Succubus
     - USERNAME=abel@ibm.com
     # IBMCLOUD_API_KEY defined via web UI
