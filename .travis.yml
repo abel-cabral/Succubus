@@ -4,9 +4,56 @@ language: node_js
 
 node_js: 12
 
+  # Connect to the appropriate IBM Cloud org/space and replace branch-dependent URLs and IPs  
+  echo "Installing IBM Cloud command-line tool and plugin...";
+  curl -fsSL https://clis.cloud.ibm.com/install/linux | sh;
+  ibmcloud plugin install container-service -f;
+  ibmcloud cf install -f 
+  echo "Connect to the appropriate IBM Cloud instance...";
+  ibmcloud login -a cloud.ibm.com -o "$ORG" -s "$SPACE" -r "$REGION";
+  ibmcloud ks init;
+  ibmcloud ks cluster config --cluster "$K8S_CLUSTER"
+  
+  ROUTE=$(ibmcloud cf routes | grep "$APP_NAME" | awk '{print $2}');
+  
+  echo -e "export const BotKeys = {\n
+    TELEGRAM_CHAT_PASSWORD:'$TELEGRAM_CHAT_PASSWORD',\n
+    TELEGRAM_BOT_TOKEN:'$TELEGRAM_BOT_TOKEN',\n
+    TINDER_TOKEN:'$TINDER_TOKEN',\n
+    WATSON_ASSISTANT_ID:'$WATSON_ASSISTANT_ID',\n
+    WATSON_API_KEY:'$WATSON_API_KEY',\n
+    WATSON_URL:'$WATSON_URL'\n
+  };\n" | tee src/environments.ts;
+  sed -i -e "s/ROUTE/$ROUTE/g" manifest.yml;
+    
+
 install:
   # Install NodeJS modules (excluding optional modules)
   - npm install --no-optional --no-shrinkwrap --no-package-lock
 
 script: 
   - npm run prestart
+
+deploy:
+  provider: bluemixcloudfoundry
+  username: apikey
+  password: $IBMCLOUD_API_KEY
+  organization: $ORG
+  space: $SPACE
+  on:
+    branch:
+      - master
+      - release
+
+before_deploy:
+  - rm -fr ./node_modules
+
+env:
+  global:
+    - ORG=abel@ibm.com
+    - REGION=us-south
+    - NAMESPACE=dev
+    - K8S_CLUSTER=nanoeor
+    - APP_NAME=Succubus
+    - USERNAME=abel@ibm.com
+    # IBMCLOUD_API_KEY defined via web UI

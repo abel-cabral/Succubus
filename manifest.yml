@@ -1,6 +1,12 @@
 ---
 applications:
- - name: Succubus
-   command: npm run start
-   random-route: true
-   memory: 256M
+- path: .
+  command: npm run start
+  instances: 1
+  memory: 256M
+  disk_quota: 256M
+  name: ROUTE
+  routes:
+    - route: ROUTE.mybluemix.net
+  buildpacks:
+    - sdk-for-nodejs
