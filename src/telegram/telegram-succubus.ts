@@ -32,7 +32,7 @@ export class TelegramSuccubus {
 
   constructor() {
     this.bot.start((ctx) => ctx.reply('Welcome, do you need do login'));
-    this.bot.hears(BotKeys.MY_TELEGRAM_KEY, (ctx) => {
+    this.bot.hears(BotKeys.TELEGRAM_CHAT_PASSWORD, (ctx) => {
       ctx.reply('Login has been success');
       this.myTelegramChatId = ctx.from?.id;
       this.bot.stop();
